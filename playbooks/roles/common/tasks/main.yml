@@ -1,0 +1,23 @@
+---
+
+#Install wget on all hosts
+
+- name: Install wget on Ubuntu
+  apt: name={{ item }} state=installed
+  with_items:
+    - "wget"
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu' 
+
+- name: Instal wget on centos
+  yum: name={{ item }} state=installed
+  with_items:
+    - "wget"
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: Copy generated files to all hosts
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+     - { src: '/home/ec2-user/certs/ca.pem' , dest: '/home/ec2-user/' }
+     - { src: '/home/ec2-user/certs/kubernetes-key.pem', dest: '/home/ec2-user/' }
+     - { src: '/home/ec2-user/certs/kubernetes.pem', dest: '/home/ec2-user/' }  
+

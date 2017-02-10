@@ -1,0 +1,27 @@
+--- 
+
+# Main file for deploying the complete stack
+#
+
+- name: Apply common config 
+  hosts: all
+  remote_user: ec2-user
+
+  roles:
+     - common
+
+
+- name: Setup TLS certs
+  hosts: localhost
+  become: true
+  
+  roles: 
+     - localhost
+
+
+- name: Etcd setup
+  hosts: etcd-nodes
+  become: true
+   
+  roles:
+     - etcd

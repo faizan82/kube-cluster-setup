@@ -1,0 +1,53 @@
+---
+
+- name: Create etcd directory
+  file:
+     path: /etc/etcd/
+     state: directory
+     mode: 0755 
+
+- name: Copy cert files from home dir
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+     - { src: '/home/ec2-user/ca.pem', dest: '/etc/etcd/' }
+     - { src: '/home/ec2-user/kubernetes-key.pem', dest: '/etc/etcd/' }
+     - { src: '/home/ec2-user/kubernetes.pem', dest: '/etc/etcd/' }
+
+- name: Untar 
+  unarchive:
+     src: https://github.com/coreos/etcd/releases/download/v3.0.10/etcd-v3.0.10-linux-amd64.tar.gz
+     dest: /tmp 
+     remote_src: True
+
+- name: Copy etcd to bin directory
+  shell: cp /tmp/etcd-v3.0.10-linux-amd64/etcd* /usr/bin/
+ 
+
+- name: Create directory for etcd persistent storage
+  file: 
+     path: /var/lib/etcd
+     state: directory 
+     mode: 0755 
+
+- name: Create directory for systemd files
+  file:
+     path:  /etc/systemd/system
+     state: directory 
+     mode: 0755
+
+- name: Copy systemd template to systemd dir
+  template: 
+      src: etcd.service.j2
+      dest: /etc/systemd/system/etcd.service
+      mode: 0644
+
+- name: Start etcd services1
+  command: systemctl daemon-reload
+
+- name: Start etcd services2
+  command: systemctl enable etcd
+
+- name: Start etcd services3
+  command: systemctl start etcd
+
+

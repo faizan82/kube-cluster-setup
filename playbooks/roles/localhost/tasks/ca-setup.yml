@@ -1,0 +1,61 @@
+---
+
+# Setup CA/CSR and private key
+
+- name: Create certs directory
+  file: 
+    path: /home/ec2-user/certs 
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+
+- name: Create CA file
+  template:
+       src: ca-config.json.j2
+       dest: /home/ec2-user/certs/ca-config.json
+       owner: ec2-user
+       group: ec2-user
+
+- name: Create CSR file 
+  template: 
+       src: ca-csr.json.j2
+       dest: /home/ec2-user/certs/ca-csr.json
+       owner: ec2-user
+       group: ec2-user
+
+- name: Generate ca cert and key files
+  shell: "/usr/local/bin/cfssl gencert -initca ca-csr.json | /usr/local/bin/cfssljson -bare ca"
+  become: yes
+  become_user: ec2-user
+  args:
+      chdir: /home/ec2-user/certs
+
+#- name: Change permissions for generated files
+#  command: find /home/ec2-user/certs -type f -exec chown ec2-user:ec2-user {} \;
+
+- name: Verify the certs
+  command: openssl x509 -in ca.pem -text -noout
+  args: 
+     chdir: /home/ec2-user/certs
+  register: out
+
+#- debug: var=out.stdout_lines
+
+
+- name: Generate CSR for kubernetes
+  template: 
+       src: kubernetes-csr.json.j2
+       dest: /home/ec2-user/certs/kubernetes-csr.json
+       owner: ec2-user
+       group: ec2-user
+
+- name: Generate kube certs and keys 
+  shell: "/usr/local/bin/cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kubernetes-csr.json | /usr/local/bin/cfssljson -bare kubernetes"
+  become: yes
+  become_user: ec2-user
+  args:
+     chdir: /home/ec2-user/certs
+  register: out
+
+- debug: var=out.stdout_lines
+
