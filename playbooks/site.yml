@@ -3,25 +3,36 @@
 # Main file for deploying the complete stack
 #
 
-- name: Apply common config 
-  hosts: all
-  remote_user: ec2-user
+- name: Generate certs on Jump host #Has to change
+  hosts: tag_Name_Jump_node
+  remote_user: ubuntu
+  become: True
 
   roles:
-     - common
-
-
-- name: Setup TLS certs
-  hosts: localhost
-  become: true
-  
-  roles: 
      - localhost
 
 
-- name: Etcd setup
-  hosts: etcd-nodes
-  become: true
+- name: Initial configuration on all hosts
+  hosts: ec2
+  remote_user: ubuntu 
+  become: True
+  
+  roles:
+    - common
+
+- name: Setup etcd 
+  hosts: tag_Node_etcd
+  remote_user: ubuntu
+  become: True
+
+  roles:
+   - etcd
+
+- name: Setup kube servers
+  hosts: tag_Node_kubeM
+  remote_user: ubuntu
+  become: True
    
   roles:
-     - etcd
+    - kube-master
+

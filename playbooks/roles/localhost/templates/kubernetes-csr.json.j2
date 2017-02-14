@@ -1,13 +1,13 @@
 {
   "CN": "kubernetes",
   "hosts": [
-  {% for host in groups['etcd-nodes'] %}
+  {% for host in groups['tag_Node_etcd'] %}
     "{{host}}",
   {% endfor %}
-  {% for host in groups['kube-master-nodes'] %}
+  {% for host in groups['tag_Node_kubeM'] %}
     "{{host}}",
   {% endfor %}
-  {% for host in groups['worker-nodes'] %}
+  {% for host in groups['tag_Node_worker'] %}
     "{{host}}",
   {% endfor %}
   "127.0.0.1"

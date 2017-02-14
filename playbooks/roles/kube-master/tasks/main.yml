@@ -1,0 +1,63 @@
+---
+
+- name: Create kube-certs directory
+  file:
+     path: /var/lib/kubernetes
+     state: directory
+     mode: 0755 
+
+- name: Copy cert files from home dir
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+     - { src: '/home/ubuntu/ca.pem', dest: '/var/lib/kubernetes' }
+     - { src: '/home/ubuntu/kubernetes-key.pem', dest: '/var/lib/kubernetes' }
+     - { src: '/home/ubuntu/kubernetes.pem', dest: '/var/lib/kubernetes' }
+
+- name: Download kube binaries 
+  get_url: 
+     url: https://storage.googleapis.com/kubernetes-release/release/v1.4.0/bin/linux/amd64/{{item}}
+     dest: /usr/bin/{{item}}
+     mode: 0755
+  with_items: 
+  - kube-apiserver
+  - kube-controller-manager
+  - kube-scheduler
+  - kubectl
+
+- name: Copy token file to kube hosts
+  copy:
+    src: token.csv
+    dest: /var/lib/kubernetes/
+
+- name: Copy auth file
+  copy:
+    src: authorization-policy.jsonl
+    dest: /var/lib/kubernetes/
+
+- name: Copy service files
+  template: src={{item}}.service.j2 dest=/etc/systemd/system/{{item}}.service
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+
+- name: Reload daemons
+  command: systemctl daemon-reload 
+
+- name: Enable kube services
+  command: "systemctl enable {{ item }}"
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+
+- name: Start kube services
+  service: 
+    name: "{{ item }}"
+    state: restarted 
+    enabled: yes
+  with_items: 
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+

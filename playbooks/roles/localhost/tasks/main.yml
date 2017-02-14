@@ -28,3 +28,9 @@
       mode: 0755   
 
 - include: ca-setup.yml
+
+#- name: Test template 
+  #become: False
+  #template: 
+      #src: /home/ubuntu/ansible/kube-cluster-setup/playbooks/roles/etcd/templates/etcd.service.j2
+      #dest: /home/ubuntu/ansible/kube-cluster-setup/playbooks/temp.txt

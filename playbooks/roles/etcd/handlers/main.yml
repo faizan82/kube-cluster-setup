@@ -1,0 +1,6 @@
+# Restart ectd services if required
+---
+
+- name: restart etcd
+  service: name=etcd state=restarted
+
