@@ -1,0 +1,41 @@
+---
+
+- name: Create CNI dir
+  file: >
+    path=/opt/cni
+    state=directory 
+    mode=0755
+
+
+- name: Download CNI 
+  get_url: >
+     url=https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
+     dest=/tmp
+     
+- name: Unarchive tar
+  unarchive: >
+     copy=no
+     src=/tmp/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
+     dest=/opt/cni
+
+- name: Create Kubelet dir
+  file: >
+     path=/var/lib/kubelet
+     state=directory
+     mode=0755
+
+- name: Template copy for kubelet
+  template: >
+     src=kubeconfig.j2
+     dest=/var/lib/kubelet/kubeconfig
+
+
+- name: Copy template for kubelet service 
+  template: >
+      src=kubelet.service.j2
+      dest=/etc/systemd/system/kubelet.service
+  notify:
+    - reload systemd daemon
+    - enable kubelet
+    - start kubelet
+

@@ -2,14 +2,13 @@
 
 # Main file for deploying the complete stack
 #
+#- name: Generate certs on Jump host #Has to change
+#  hosts: tag_Name_Jump_node
+#  remote_user: ubuntu
+#  become: True
 
-- name: Generate certs on Jump host #Has to change
-  hosts: tag_Name_Jump_node
-  remote_user: ubuntu
-  become: True
-
-  roles:
-     - localhost
+#  roles:
+#     - localhost
 
 
 - name: Initial configuration on all hosts
@@ -32,7 +31,15 @@
   hosts: tag_Node_kubeM
   remote_user: ubuntu
   become: True
-   
+
   roles:
     - kube-master
 
+
+- name: Setup worker nodes
+  hosts: tag_Node_worker
+  remote_user: ubuntu
+  become: True
+
+  roles:
+    - workers

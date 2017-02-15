@@ -31,8 +31,13 @@
 
 
 - name: Copy etcd to bin directory
-  shell: cp /tmp/etcd-v3.1.0-linux-amd64/etcd* /usr/bin/
- 
+  copy: >
+     src=/tmp/etcd-v3.1.0-linux-amd64/{{item}} 
+     dest=/usr/bin/{{item}}
+     remote_src=true
+  with_items:
+     - etcd
+     - etcdctl
 
 - name: Create directory for etcd persistent storage
   file: 

@@ -1,0 +1,35 @@
+---
+
+- name: Create kube-certs directory
+  file:
+     path: /var/lib/kubernetes
+     state: directory
+     mode: 0755 
+
+- name: Copy cert files from home dir
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+     - { src: '/home/ubuntu/ca.pem', dest: '/var/lib/kubernetes' }
+     - { src: '/home/ubuntu/kubernetes-key.pem', dest: '/var/lib/kubernetes' }
+     - { src: '/home/ubuntu/kubernetes.pem', dest: '/var/lib/kubernetes' }
+
+
+# Setup docker installation 
+- include: docker-setup.yml
+
+- name: Download and install kube-worker binaries 
+  get_url: 	
+     url: https://storage.googleapis.com/kubernetes-release/release/v1.4.0/bin/linux/amd64/{{item}}
+     dest: /usr/bin/{{item}}
+     mode: 0755
+  with_items: 
+  - kubectl
+  - kube-proxy
+  - kubelet
+
+
+- include: kubelet-setup.yml
+- include: proxy-kube.yml
+
+
+

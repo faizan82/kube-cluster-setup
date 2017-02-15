@@ -1,0 +1,36 @@
+- name: Download and install docker
+  get_url: >
+     url=https://get.docker.com/builds/Linux/x86_64/docker-1.12.1.tgz
+     dest=/tmp/docker-1.12.1.tgz
+
+- name: Unarchive binaries
+  unarchive: >
+     copy=no
+     src=/tmp/docker-1.12.1.tgz
+     dest=/tmp/
+     creates=/tmp/docker
+
+- name: Copy all docker binaries to bin dir
+  copy: >
+     remote_src=true
+     src=/tmp/docker/{{item}}
+     dest=/usr/bin
+     mode=0755
+  with_items:
+    - docker
+    - dockerd
+    - docker-proxy
+    - docker-containerd
+    - docker-containerd-ctr
+    - docker-containerd-shim
+    - docker-runc
+
+- name: Copy docker service file to systemd
+  template: >
+     src=docker.service.j2
+     dest=/etc/systemd/system/docker.service
+     mode=700
+  notify:
+    - reload systemd daemon
+    - enable docker service
+    - restart docker
